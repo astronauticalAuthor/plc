@@ -10,27 +10,32 @@
     (id (lambda (x) (or (symbol? x) (list-of var-exp))))
     (body (list-of expression?))]
   [if-exp
-    (condition expression?)
-    (result (list-of expression?))]
+    (test-exp expression?)
+    (then-exp expression?)
+    (else-exp expression?)]
   [set!-exp
     (id symbol?)
     (val expression?)]
   [named-let-exp
     (name symbol?)
-    (arguments list?)
-    (body (list-of expression?))]
+    (vars list?)
+    (exps (list-of expression?))
+    (bodies (list-of expression?))]
   [let-exp
-    (arguments list?)
-    (body (list-of expression?))]
+    (vars list?)
+    (exps (list-of expression?))
+    (bodies (list-of expression?))]
   [letrec-exp
-    (arguments list?)
-    (body (list-of expression?))]
+    (vars list?)
+    (exps (list-of expression?))
+    (bodies (list-of expression?))]
   [app-exp
     (rator expression?)
     (rand (list-of expression?))]
   [let*-exp
-    (arguments list?)
-    (body (list-of expression?))])
+    (vars list?)
+    (exps (list-of expression?))
+    (bodies (list-of expression?))])
 
 	
 ; datatype for procedures.  At first there is only one
@@ -44,8 +49,8 @@
     (bodies (list-of expression?))
     (env environment?)])
 	 
-(define-datatype bool-val bool-val?
-  [true-exp #t])
+; (define-datatype bool-val bool-val?
+;   [true-exp #t])
 	 
 	
 ;; environment type definitions

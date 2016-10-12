@@ -8,7 +8,7 @@
 (define 3rd caddr)
 
 (define parse-exp
-  (trace-lambda calling? (datum)
+  (lambda (datum)
     (cond
       [(symbol? datum)
         (var-exp datum)]
@@ -68,9 +68,8 @@
                       (2nd datum)))
                   (eopl:error 'parse-exp "Invalid let* syntax: Invalid variable/value list: " datum)]
                 [else
-                  (let*-exp (map (lambda (x) 
-                                              (list (1st x) (parse-exp (2nd x)))) (2nd datum)) (map parse-exp (cddr datum)))])]
-
+                  (let*-exp (map car (2nd datum)) (map (lambda (x)
+                                                                (parse-exp (2nd x))) (2nd datum)) (map parse-exp (cddr datum)))])]
 
               [(eqv? (1st datum) 'let)  ; test for let
                   (if (symbol? (2nd datum) )
@@ -90,8 +89,8 @@
                                 (3rd datum)))
                             (eopl:error 'parse-exp "Invalid let syntax: decls first members must be symbols: ~s" datum)]
                         [else 
-                          (named-let-exp (2nd datum) (map (lambda (x) 
-                                              (list (1st x) (parse-exp (2nd x)))) (3rd datum)) (map parse-exp (cdddr datum)))])
+                          (named-let-exp (map car (3rd datum)) (map (lambda (x)
+                                                                (parse-exp (2nd x))) (3rd datum)) (map parse-exp (cdddr datum)))])
 
                       (cond ; unnamed let 
                         [(< (length datum) 3)
@@ -109,9 +108,8 @@
                                 (2nd datum)))
                             (eopl:error 'parse-exp "Invalid let syntax: decls first members must be symbols: ~s" datum)]
                         [else
-                          (let-exp (map (lambda (x) 
-                                              (list (1st x) (parse-exp (2nd x)))) (2nd datum)) (map parse-exp (cddr datum)))]))]
-
+                          (let-exp (map car (2nd datum)) (map (lambda (x)
+                                                                (parse-exp (2nd x))) (2nd datum)) (map parse-exp (cddr datum)))]))]
 
               [(eqv? (1st datum) 'letrec)
                 (cond ; letrec
@@ -131,27 +129,17 @@
                             (eopl:error 'parse-exp "Invalid let syntax: decls first members must be symbols: ~s" datum)]
 
                         [else 
-                          (letrec-exp (map (lambda (x) 
-                                              (list (1st x) (parse-exp (2nd x)))) (2nd datum)) (map parse-exp (cddr datum)))])]
+                          (letrec-exp (map car (2nd datum)) (map (lambda (x)
+                                                                (parse-exp (2nd x))) (2nd datum)) (map parse-exp (cddr datum)))])]
+              [eqv? (1st datum) 'quote
+                (lit-exp (cadr datum))]
 
-
-                        
             [else
               (app-exp (parse-exp (1st datum)) (map parse-exp (cdr datum)))])]
       [(pair? datum)
           (eopl:error 'parse-exp "Error in parse-exp: Not a proper list: ~s" datum)]
-      [(or (number? datum) (string? datum) (boolean? datum) (vector? datum) (null? datum) (list? datum))
+      [(or (number? datum) (string? datum) (boolean? datum) (vector? datum) (null? datum) (list? datum) )
         (lit-exp datum)]
       [else
         (eopl:error 'parse-exp "Invalid concrete syntax ~s" datum)])))
-
-
-
-
-
-
-
-
-
-
 

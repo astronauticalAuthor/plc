@@ -3,35 +3,46 @@
 (define top-level-eval
   (lambda (form)
     ; later we may add things that are not expressions.
-    (eval-exp form)))
+    (eval-exp form (empty-env))))
 
 ; eval-exp is the main component of the interpreter
-
 (define eval-exp
-  (lambda (exp)
+  (lambda (exp env)
     (cases expression exp
       [lit-exp (datum) datum]
       [var-exp (id)
-				(apply-env init-env id; look up its value.
-      	   (lambda (x) x) ; procedure to call if id is in the environment 
-           (lambda () (eopl:error 'apply-env ; procedure to call if id not in env
-		          "variable not found in environment: ~s"
-			   id)))]
+        (apply-env env id ; look up its value.
+           (lambda (x) x) ; procedure to call if id is in the environment 
+           (lambda () (eopl:error 'apply-env "variable not found in environment: ~s" id)))]
+      [let-exp (vars exps bodies)
+        (let ([new-env (extend-env vars (eval-rands exps env) env)])
+          (eval-bodies bodies new-env))]
       [if-exp (test-exp then-exp else-exp)
-        (if eval-exp test-exp)
-          (eval-exp then-exp env)
-          (eval-exp else-exp env)]
+        (if (eval-exp test-exp env)
+            (eval-exp then-exp env)
+            (eval-exp else-exp env))]
+      [set!-exp (vars exps)
+        (list '())]
+      [named-let-exp (name vars exps bodies)
+      (list '())]
+      [letrec-exp (vars exps bodies)
+        (list '())]
+      [let*-exp (vars exps bodies)
+        (let ([new-env (extend-env vars (eval-rands exps env) env)])
+          (eval-bodies bodies new-env))]
       [app-exp (rator rands)
-        (let ([proc-value (eval-exp rator)]
-              [args (eval-rands rands)])
+        (let ([proc-value (eval-exp rator env)] [args (eval-rands rands env)])
           (apply-proc proc-value args))]
-      [else (eopl:error 'eval-exp "Bad abstract syntax: ~a" exp)])))
+      
+      [lambda-exp (vars bodies)
+        (closure vars bodies env)])))
 
 ; evaluate the list of operands, putting results into a list
 
 (define eval-rands
-  (lambda (rands)
-    (map eval-exp rands)))
+  (lambda (rands env)
+    (map (lambda (e)
+        (eval-exp e env)) rands)))
 
 ;  Apply a procedure to its arguments.
 ;  At this point, we only have primitive procedures.  
@@ -73,8 +84,8 @@
       [(sub1) (- (1st args) 1)]
       [(not) (not (car args))]
       [(cons) (cons (1st args) (2nd args))]
-      [(car) (car args)]
-      [(cdr) (cdr args)]
+      [(car) (car (car args))]
+      [(cdr) (cdr (car args))]
       [(null?) (null? (car args))]
       [(<) (apply < args)]
       [(<=) (apply <= args)]
@@ -94,7 +105,31 @@
       [(list->vector) (list->vector (car args))]
       [(list->string) (list->string (car args))]
       [(list->fxvector) (list->fxvector (car args))]
-      
+      [(vector) (apply vector args)]
+      [(make-vector) (if (= (length args) 1) (make-vector (1st args)) (make-vector (1st args) (2nd args)))]
+      [(vector-ref) (vector-ref (1st args) (2nd args))]
+      [(list-ref) (list-ref (1st args) (2nd args))]
+      [(vector?) (vector? (1st args))]
+      [(number?) (number? (1st args))]
+      [(symbol?) (symbol? (1st args))]
+      [(set-car!) (set-car! (1st args) (2nd args))]
+      [(set-cdr!) (set-cdr! (1st args) (2nd args))]
+      [(vector-set!) (vector-set! (1st args) (2nd args) (3rd args))]
+      [(display) (if (= (length args) 1) (display (1st args)) (display (1st args) (2nd args)))]
+      [(newline) (newline)]
+      [(cadr) (cadr (car args))]
+      [(caar) (caar (car args))]
+      [(cdar) (cdar (car args))]
+      [(cddr) (cddr (car args))]
+      [(caaar) (caaar (car args))]
+      [(caadr) (caadr (car args))]
+      [(cadar) (cadar (car args))]
+      [(cdaar) (cdaar (car args))]
+      [(caddr) (caddr (car args))]
+      [(cdadr) (cdadr (car args))]
+      [(cddar) (cddar (car args))]
+      [(cdddr) (cdddr (car args))]
+      ;[(quote) (car args)]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
             prim-op)])))
@@ -109,7 +144,9 @@
       (rep))))  ; tail-recursive, so stack doesn't grow.
 
 (define eval-one-exp
-  (lambda (x) (top-level-eval (parse-exp x))))
+  (lambda (x)
+    (top-level-eval (parse-exp x))
+  ))
 
 (define eval-bodies
   (lambda (bodies env)
