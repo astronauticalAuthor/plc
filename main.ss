@@ -3,14 +3,15 @@
 ;                  
 ; Claude Anderson.  Last modified April, 2014
 
-(load "chez-init.ss") 
+; (load "chez-init.ss") 
+(load "C:/Users/Max Kelly/Documents/Classes/CSSE304 PLC/A13-multiple-files/plc/chez-init.ss")
 
 (define load-all ; make it easy to reload the files
   (lambda ()
-    (load "datatypes.ss")
-    (load "parse.ss")
-    (load "env.ss")
-    (load "interpreter.ss")))
+    (load "C:/Users/Max Kelly/Documents/Classes/CSSE304 PLC/A13-multiple-files/plc/datatypes.ss")
+    (load "C:/Users/Max Kelly/Documents/Classes/CSSE304 PLC/A13-multiple-files/plc/parse.ss")
+    (load "C:/Users/Max Kelly/Documents/Classes/CSSE304 PLC/A13-multiple-files/plc/env.ss")
+    (load "C:/Users/Max Kelly/Documents/Classes/CSSE304 PLC/A13-multiple-files/plc/interpreter.ss")))
 
 (load-all)
 

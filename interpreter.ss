@@ -13,7 +13,8 @@
       [var-exp (id)
         (apply-env env id ; look up its value.
            (lambda (x) x) ; procedure to call if id is in the environment 
-           (lambda () (eopl:error 'apply-env "variable not found in environment: ~s" id)))]
+           (begin (display "env: ") (display env) (lambda () (eopl:error 'apply-env "variable not found in environment: ~s" id))))]
+      [proc-exp (rator) rator]
       [let-exp (vars exps bodies)
         (let ([new-env (extend-env vars (eval-rands exps env) env)])
           (eval-bodies bodies new-env))]
@@ -21,6 +22,8 @@
         (if (eval-exp test-exp env)
             (eval-exp then-exp env)
             (eval-exp else-exp env))]
+      [prim-proc-exp (rator rands)
+        (apply-prim-proc rator (map (lambda (x) (eval-exp x env)) rands))]
       [set!-exp (vars exps)
         (list '())]
       [named-let-exp (name vars exps bodies)
@@ -33,9 +36,8 @@
       [app-exp (rator rands)
         (let ([proc-value (eval-exp rator env)] [args (eval-rands rands env)])
           (apply-proc proc-value args))]
-      
       [lambda-exp (vars bodies)
-        (closure vars bodies env)])))
+        (begin (display "bodies:") (display bodies) (closure vars bodies env))])))
 
 ; evaluate the list of operands, putting results into a list
 
@@ -54,12 +56,14 @@
       [prim-proc (op) (apply-prim-proc op args)]
 			; You will add other cases
       [closure (vars bodies env)
-        (eval-bodies bodies (extend-env vars args new))]
+        (eval-bodies bodies (extend-env vars args env))]
       [else (error 'apply-proc
                    "Attempt to apply bad procedure: ~s" 
                     proc-value)])))
 
-(define *prim-proc-names* '(+ - * / zero? add1 sub1 cons < <= > >= = list append))
+(define *prim-proc-names* '(+ - * / zero? add1 sub1 not cons car cdr null? < <= > >= = list append assq assv assoc equal? eq? eqv? atom? length list->vector
+                              list->string list->fxvector vector make-vector vector-ref list-ref vector? number? symbol? set-car! set-cdr! vector-set! display
+                              newline cadr caar cdar cddr caaar caadr cadar cdaar cddar cdadr caddr cdddr list? procedure? pair? vector->list))
 (define bool-vals '(#t #f))
 
 (define init-env         ; for now, our initial global environment only contains 
@@ -79,6 +83,8 @@
       [(-) (apply - args)]
       [(*) (apply * args)]
       [(/) (apply / args)]
+      [(procedure?) (procedure? (car args))]  ; not working
+      [(pair?) (pair? (car args))]
       [(zero?) (eq? 0 (car args))]
       [(add1) (+ (1st args) 1)]
       [(sub1) (- (1st args) 1)]
@@ -93,6 +99,7 @@
       [(>=) (apply >= args)]
       [(=) (apply = args)]
       [(list) args]
+      [(list?) (list? (car args))]
       [(append) (append (1st args) (2nd args))]
       [(assq) (assq (car args) (cdr args))]
       [(assv) (assv (car args) (cdr args))]
@@ -105,6 +112,7 @@
       [(list->vector) (list->vector (car args))]
       [(list->string) (list->string (car args))]
       [(list->fxvector) (list->fxvector (car args))]
+      [(vector->list) (vector->list (car args))]
       [(vector) (apply vector args)]
       [(make-vector) (if (= (length args) 1) (make-vector (1st args)) (make-vector (1st args) (2nd args)))]
       [(vector-ref) (vector-ref (1st args) (2nd args))]
@@ -145,20 +153,13 @@
 
 (define eval-one-exp
   (lambda (x)
-    (top-level-eval (parse-exp x))
+    (begin (display (parse-exp x)) (top-level-eval (parse-exp x)))
   ))
 
 (define eval-bodies
   (lambda (bodies env)
-    (if (null? (car bodies))
+    (if (null? (cdr bodies))
       (eval-exp (car bodies) env)
       (begin (eval-exp (car bodies) env)
         (eval-bodies (cdr bodies) env)))))
-
-
-
-
-
-
-
 

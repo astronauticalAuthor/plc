@@ -9,6 +9,9 @@
   [lambda-exp
     (id (lambda (x) (or (symbol? x) (list-of var-exp))))
     (body (list-of expression?))]
+  [prim-proc-exp
+    (rator symbol?)
+    (rands (list-of expression?))]
   [if-exp
     (test-exp expression?)
     (then-exp expression?)
@@ -35,7 +38,9 @@
   [let*-exp
     (vars list?)
     (exps (list-of expression?))
-    (bodies (list-of expression?))])
+    (bodies (list-of expression?))]
+  [proc-exp
+    (name procedure?)])
 
 	
 ; datatype for procedures.  At first there is only one
@@ -59,7 +64,7 @@
   (lambda (x) #t))
 
 (define-datatype environment environment?
-  (empty-env-record)
+  (empty-env-record)  ;Exception in closure:   Bad env field (environment? (empty-env-record)) => #f
   (extended-env-record
    (syms (list-of symbol?))
    (vals (list-of scheme-value?))
