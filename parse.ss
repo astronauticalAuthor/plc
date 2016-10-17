@@ -10,13 +10,11 @@
 (define parse-exp
   (lambda (datum)
     (cond
-      [(procedure? datum) (proc-exp datum)]
-      [(symbol? datum)
-        (var-exp datum)]
+      ; [(procedure? datum) 
+      ;   (proc-exp datum)]
+
       [(and (list? datum) (not (null? datum)))
           (cond
-            [(member (1st datum) *prim-proc-names*) (prim-proc-exp (1st datum) (map parse-exp (cdr datum)))]
-
             [(eqv? (1st datum) 'lambda)  ; test for the lambda cases
               (cond
                 [(null? (cdr datum))
@@ -40,6 +38,8 @@
                   (eopl:error 'parse-exp "Invalid if syntax: Too many arguments:~s" datum)]
                 [(not (or (= (length datum) 3) (= (length datum) 4)))
                   (eopl:error 'parse-exp "Invalid if syntax: incorrect arguments to if: ~s" datum)]
+                [(= (length datum) 3)
+                  (if-one-exp (parse-exp (2nd datum)) (parse-exp (3rd datum))  )]
                 [else
                   (if-exp (parse-exp (2nd datum)) (parse-exp (3rd datum)) (parse-exp (cadddr datum)))])]
 
@@ -133,12 +133,15 @@
                         (letrec-exp (map car (2nd datum)) (map (lambda (x)
                                                               (parse-exp (2nd x))) (2nd datum)) (map parse-exp (cddr datum)))])]
             [(eqv? (1st datum) 'quote)
-              (begin (display newline) (display "there is a quote") (lit-exp (cadr datum)))]
+              (lit-exp (cadr datum))]
 
             [else
-              (begin (display "reached?")(app-exp (parse-exp (1st datum)) (map parse-exp (cdr datum))))])]
+               (app-exp (parse-exp (1st datum)) (map parse-exp (cdr datum)))])]
+            
+      [(symbol? datum)
+        (var-exp datum)]
 
-      [(or (number? datum) (string? datum) (boolean? datum) (vector? datum) (null? datum) (list? datum) (procedure? datum))
+      [(or (number? datum) (string? datum) (boolean? datum) (vector? datum) (null? datum) (list? datum))
         (lit-exp datum)]
       [(pair? datum)
           (eopl:error 'parse-exp "Error in parse-exp: Not a proper list: ~s" datum)]

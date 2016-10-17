@@ -9,13 +9,13 @@
   [lambda-exp
     (id (lambda (x) (or (symbol? x) (list-of var-exp))))
     (body (list-of expression?))]
-  [prim-proc-exp
-    (rator symbol?)
-    (rands (list-of expression?))]
   [if-exp
     (test-exp expression?)
     (then-exp expression?)
     (else-exp expression?)]
+  [if-one-exp
+    (test-exp expression?)
+    (then-exp expression?)]
   [set!-exp
     (id symbol?)
     (val expression?)]
@@ -38,11 +38,16 @@
   [let*-exp
     (vars list?)
     (exps (list-of expression?))
-    (bodies (list-of expression?))]
-  [proc-exp
-    (name procedure?)])
+    (bodies (list-of expression?))])
 
-	
+(define-datatype environment environment?
+  (empty-env-record)  ;Exception in closure:   Bad env field (environment? (empty-env-record)) => #f
+  (extended-env-record
+   (syms (list-of symbol?))
+   (vals (list-of scheme-value?))
+   (env environment?)))
+
+
 ; datatype for procedures.  At first there is only one
 ; kind of procedure, but more kinds will be added later.
 
@@ -63,9 +68,4 @@
 (define scheme-value?
   (lambda (x) #t))
 
-(define-datatype environment environment?
-  (empty-env-record)  ;Exception in closure:   Bad env field (environment? (empty-env-record)) => #f
-  (extended-env-record
-   (syms (list-of symbol?))
-   (vals (list-of scheme-value?))
-   (env environment?)))
+
