@@ -73,6 +73,22 @@
           [else bodies])]
       [while-exp (test bodies)
         (while-exp (syntax-expand test) (map syntax-expand bodies))]
+      [cond-exp (tests bodies)
+        (cond
+          [(null? tests) (lit-exp void)]
+          [(eqv? 'else (cadar tests)) (car bodies)]
+          [(not (null? tests)) (if-exp (car tests) (car bodies) (syntax-expand (cond-exp (cdr tests) (cdr bodies))))])]
+      [case-exp (key tests bodies)
+        (cond
+          [(null? tests) (lit-exp void)]
+          [(eqv? 'else (cadar tests)) (car bodies)]
+          [else (if-exp (app-exp (var-exp member) key (car tests)) (car bodies) (syntax-expand (case-exp key (cdr tests) (cdr bodies))))]
+
+          )
+
+
+
+      ]
       [else exp])))
 
 ; evaluate the list of operands, putting results into a list
@@ -105,7 +121,7 @@
 
 (define *prim-proc-names* '(+ - * / zero? add1 sub1 not cons car cdr null? < <= > >= = list append assq assv assoc equal? eq? eqv? atom? length list->vector
                               list->string list->fxvector vector make-vector vector-ref list-ref vector? number? symbol? set-car! set-cdr! vector-set! display
-                              newline cadr caar cdar cddr caaar caadr cadar cdaar cddar cdadr caddr cdddr list? procedure? pair? vector->list void map apply begin quotient))
+                              newline cadr caar cdar cddr caaar caadr cadar cdaar cddar cdadr caddr cdddr list? procedure? pair? vector->list void map apply begin quotient member))
 (define bool-vals '(#t #f))
 
 (define init-env         ; for now, our initial global environment only contains 
@@ -183,6 +199,7 @@
       [(map) (map (car args) (cadr args))]
       [(apply) (apply (car args) (cadr args))]
       [(quotient) (quotient (car args) (cadr args))]
+      [(member) (member (car args) (cadr args))]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
             prim-proc)])))

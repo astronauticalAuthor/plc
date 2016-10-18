@@ -15,6 +15,12 @@
 
       [(and (list? datum) (not (null? datum)))
           (cond
+            [(eqv? (1st datum) 'case)
+              (case-exp (parse-exp (2nd datum)) (map (lambda (x) (parse-exp (car x))) (cddr datum))
+                                                (map (lambda (x) (parse-exp (cadr x))) (cddr datum)))]
+            [(eqv? (1st datum) 'cond)
+              (cond-exp (map (lambda (x) (parse-exp (car x))) (cdr datum))
+                        (map (lambda (x) (parse-exp (cadr x))) (cdr datum)))]
             [(eqv? (1st datum) 'while)
               (while-exp (parse-exp (2nd datum)) (map parse-exp (cddr datum)))]
             [(eqv? (1st datum) 'and)
