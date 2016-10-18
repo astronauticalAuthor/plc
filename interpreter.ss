@@ -57,14 +57,18 @@
       [let-exp (vars exps bodies)
         (let-exp vars (map syntax-expand exps) (map syntax-expand bodies))]
       [begin-exp (bodies)
-        (app-exp (lambda-exp '() (map syntax-expand bodies)) '())]
+        (app-exp (lambda-exp '() (map-exp syntax-expand bodies)) '())
+          ; (if (not (null? bodies))
+          ;   (syntax-expand (car bodies)) 
+          ;   )
+        ]
       [and-exp (bodies)
         (if (not (null? bodies))
           (if-exp (car bodies) (syntax-expand (and-exp (cdr bodies))) (lit-exp #f))
           (lit-exp #t))]
       [or-exp (bodies)
         (if (not (null? bodies))
-          (if-exp (car bodies) (lit-exp #t) (syntax-expand (or-exp (cdr bodies))))
+          (if-exp (car bodies) (car bodies) (syntax-expand (or-exp (cdr bodies))))
           (lit-exp #f))]
       [let*-exp (vars exps bodies)
         (cond
@@ -82,11 +86,11 @@
           [(not (null? tests)) (if-exp (car tests) (car bodies) (syntax-expand (cond-exp (cdr tests) (cdr bodies))))])]
       [case-exp (key tests bodies)
         (cond
-          [(null? tests) (lit-exp void)]
+          [(null? (cdr tests)) (syntax-expand (car bodies))]
           [(eqv? 'else (cadar tests)) (car bodies)]
           [else (if-exp (app-exp (var-exp 'member) (list key (car tests)))
                         (car bodies)
-                        (syntax-expand (case-exp key (cdr tests) (cdr bodies))))]
+                        (case-exp key (cdr tests) (cdr bodies)))]
 
           )
 
@@ -200,13 +204,19 @@
       [(cddar) (cddar (car args))]
       [(cdddr) (cdddr (car args))]
       [(void) (void)]
-      [(map) (map (car args) (cadr args))]
-      [(apply) (apply (car args) (cadr args))]
+      [(map) (map-proc (car args) (cadr args))]
+      [(apply) (apply-proc (car args) (cadr args))]
       [(quotient) (quotient (car args) (cadr args))]
       [(member) (member (car args) (cadr args))]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
             prim-proc)])))
+
+(define map-proc  
+  (lambda (proc ls)
+    (if (null? ls)
+      '()
+      (cons (apply-proc proc (list (car ls))) (map-proc proc (cdr ls))))))
 
 (define rep      ; "read-eval-print" loop.
   (lambda ()
