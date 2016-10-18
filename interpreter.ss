@@ -7,7 +7,7 @@
 
 ; eval-exp is the main component of the interpreter
 (define eval-exp
-  (lambda (exp env)
+  (trace-lambda eval? (exp env)
     (cases expression exp
       [lit-exp (datum) datum]
       [var-exp (id)
@@ -52,8 +52,10 @@
       )))
 
 (define syntax-expand
-  (lambda (exp)
+  (trace-lambda synt-expand (exp)
     (cases expression exp
+      [let-exp (vars exps bodies)
+        (let-exp vars (map syntax-expand exps) (map syntax-expand bodies))]
       [begin-exp (bodies)
         (app-exp (lambda-exp '() (map syntax-expand bodies)) '())]
       [and-exp (bodies)
@@ -82,7 +84,9 @@
         (cond
           [(null? tests) (lit-exp void)]
           [(eqv? 'else (cadar tests)) (car bodies)]
-          [else (if-exp (app-exp (var-exp member) key (car tests)) (car bodies) (syntax-expand (case-exp key (cdr tests) (cdr bodies))))]
+          [else (if-exp (app-exp (var-exp 'member) (list key (car tests)))
+                        (car bodies)
+                        (syntax-expand (case-exp key (cdr tests) (cdr bodies))))]
 
           )
 
