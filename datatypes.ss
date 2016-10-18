@@ -50,6 +50,9 @@
   [and-exp
     (bodies (list-of expression?))]
   [or-exp
+    (bodies (list-of expression?))]
+  [while-exp
+    (test expression?)
     (bodies (list-of expression?))])
 
 (define-datatype environment environment?

@@ -15,6 +15,8 @@
 
       [(and (list? datum) (not (null? datum)))
           (cond
+            [(eqv? (1st datum) 'while)
+              (while-exp (parse-exp (2nd datum)) (map parse-exp (cddr datum)))]
             [(eqv? (1st datum) 'and)
               (and-exp (map parse-exp (cdr datum)))]
             [(eqv? (1st datum) 'or)

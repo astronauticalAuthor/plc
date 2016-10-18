@@ -44,6 +44,10 @@
         (inf-closure var body env)]
       [pair-arg-lambda-exp (vars body)
         (pair-closure vars body env)]
+      [while-exp (test bodies)
+        (eval-exp (if-one-exp test
+                    (app-exp (lambda-exp '() (append bodies (list (while-exp test bodies)))) '())
+                    ) env)]
       [else (error 'eval-exp "bad expression case ~s" exp)]
       )))
 
@@ -51,7 +55,7 @@
   (lambda (exp)
     (cases expression exp
       [begin-exp (bodies)
-        (app-exp (lambda-exp '() bodies) '())]
+        (app-exp (lambda-exp '() (map syntax-expand bodies)) '())]
       [and-exp (bodies)
         (if (not (null? bodies))
           (if-exp (car bodies) (syntax-expand (and-exp (cdr bodies))) (lit-exp #f))
@@ -60,24 +64,15 @@
         (if (not (null? bodies))
           (if-exp (car bodies) (lit-exp #t) (syntax-expand (or-exp (cdr bodies))))
           (lit-exp #f))]
-      ; [let*-exp (vars exps bodies)
-      ;   ; (if (not (null? vars))
-      ;   ;   (let-exp (list (car vars)) (list (car exps)) (syntax-expand (let*-exp (cdr vars) (cdr exps) bodies)))
-      ;   ;   bodies
-      ;   ;   )
-      ;   (cond
-      ;     [(and (not (null? vars)) (not (null? (cdr vars)))) (list (let-exp (list (car vars)) (list (car exps)) (syntax-expand (let*-exp (cdr vars) (cdr exps) bodies))))]
-      ;     [(and (not (null? vars)) (null? (cdr vars))) (let-exp (list (car vars)) (list (car exps)) bodies)]
-      ;     [else bodies]
-
-      ;     )
-
-
-
-      ;   ]
-
-
-
+      [let*-exp (vars exps bodies)
+        (cond
+          [(and (not (null? vars)) (not (null? (cdr vars))))
+            (let-exp (list (car vars)) (list (car exps)) (list (syntax-expand (let*-exp (cdr vars) (cdr exps) bodies))))]
+          [(and (not (null? vars)) (null? (cdr vars)))
+            (let-exp vars exps bodies)]
+          [else bodies])]
+      [while-exp (test bodies)
+        (while-exp (syntax-expand test) (map syntax-expand bodies))]
       [else exp])))
 
 ; evaluate the list of operands, putting results into a list
