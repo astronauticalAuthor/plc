@@ -9,6 +9,12 @@
   [lambda-exp
     (id (lambda (x) (or (symbol? x) (list-of var-exp))))
     (body (list-of expression?))]
+  [inf-arg-lambda-exp
+    (id symbol?)
+    (body (list-of expression?))]
+  [pair-arg-lambda-exp
+    (id (list-of symbol?))
+    (body (list-of expression?))]
   [if-exp
     (test-exp expression?)
     (then-exp expression?)
@@ -57,7 +63,8 @@
   [closure
     (vars (list-of symbol?))
     (bodies (list-of expression?))
-    (env environment?)])
+    (env environment?)]
+  )
 	 
 ; (define-datatype bool-val bool-val?
 ;   [true-exp #t])

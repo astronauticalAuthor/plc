@@ -1,13 +1,13 @@
 ; top-level-eval evaluates a form in the global environment
 
 (define top-level-eval
-  (lambda (form)
+  (trace-lambda top-lam (form)
     ; later we may add things that are not expressions.
     (eval-exp form (empty-env))))
 
 ; eval-exp is the main component of the interpreter
 (define eval-exp
-  (lambda (exp env)
+  (trace-lambda eval-exping (exp env)
     (cases expression exp
       [lit-exp (datum) datum]
       ; [var-exp (id)
@@ -47,6 +47,10 @@
           (apply-proc proc-value args))]
       [lambda-exp (vars bodies)
         (closure vars bodies env)]
+      [inf-arg-lambda-exp (var body)
+        (closure (list var) body env)]
+      [pair-arg-lambda-exp (vars body)
+        (closure vars body env)]
       )))
 
 ; evaluate the list of operands, putting results into a list
@@ -73,7 +77,7 @@
 
 (define *prim-proc-names* '(+ - * / zero? add1 sub1 not cons car cdr null? < <= > >= = list append assq assv assoc equal? eq? eqv? atom? length list->vector
                               list->string list->fxvector vector make-vector vector-ref list-ref vector? number? symbol? set-car! set-cdr! vector-set! display
-                              newline cadr caar cdar cddr caaar caadr cadar cdaar cddar cdadr caddr cdddr list? procedure? pair? vector->list void))
+                              newline cadr caar cdar cddr caaar caadr cadar cdaar cddar cdadr caddr cdddr list? procedure? pair? vector->list void map apply begin))
 (define bool-vals '(#t #f))
 
 (define init-env         ; for now, our initial global environment only contains 
@@ -148,6 +152,9 @@
       [(cddar) (cddar (car args))]
       [(cdddr) (cdddr (car args))]
       [(void) (void)]
+      [(map) (map (car args) (cadr args))]
+      [(apply) (apply (car args) (cadr args))]
+      ; [(begin) (apply begin args)]
       ;[(quote) (car args)]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
@@ -163,7 +170,7 @@
       (rep))))  ; tail-recursive, so stack doesn't grow.
 
 (define eval-one-exp
-  (lambda (x)
+  (trace-lambda evaling (x)
     (top-level-eval (parse-exp x))
   ))
 

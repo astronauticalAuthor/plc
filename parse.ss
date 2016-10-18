@@ -8,10 +8,10 @@
 (define 3rd caddr)
 
 (define parse-exp
-  (lambda (datum)
+  (trace-lambda parsing (datum)
     (cond
-      ; [(procedure? datum) 
-      ;   (proc-exp datum)]
+      [(symbol? datum)
+        (var-exp datum)]
 
       [(and (list? datum) (not (null? datum)))
           (cond
@@ -21,12 +21,19 @@
                   (eopl:error 'parse-exp "Invalid lambda syntax: No parameter list or body:~s" datum)]
                 [(null? (cddr datum))
                   (eopl:error 'parse-exp "Error in lambda expression: No body: ~s" datum)]
+                [(symbol? (2nd datum))
+                  (begin (display "here is correct") (inf-arg-lambda-exp (2nd datum) (map parse-exp (cddr datum))))]
+                [(pair? (2nd datum))
+                  (begin (display "here?") (pair-arg-lambda-exp (let loop ([old (2nd datum)] [new '()])
+                                          (if (not (pair? old))
+                                            (reverse (cons old new))
+                                            (loop (cdr old) (cons (car old) new)))) (map parse-exp (cddr datum))))]
                 [(and (list? (2nd datum)) (not (andmap symbol? (2nd datum))))
                   (eopl:error 'parse-exp "Invalid lambda syntax: Invalid parameter syntax:~s" datum)]
                 [(not (or (symbol? (2nd datum)) (pair? (2nd datum)) (null? (2nd datum))))
                   (eopl:error 'parse-exp "Invalid lambda syntax: Invalid parameter list:~s" datum)]
                 [else
-                  (lambda-exp (2nd datum) (map parse-exp (cddr datum)))])]
+                  (begin (display "or here!") (lambda-exp (2nd datum) (map parse-exp (cddr datum))))])]
 
             [(eqv? (1st datum) 'if)  ; test for the if cases
               (cond
@@ -138,8 +145,7 @@
             [else
                (app-exp (parse-exp (1st datum)) (map parse-exp (cdr datum)))])]
             
-      [(symbol? datum)
-        (var-exp datum)]
+      
 
       [(or (number? datum) (string? datum) (boolean? datum) (vector? datum) (null? datum) (list? datum))
         (lit-exp datum)]
