@@ -16,7 +16,7 @@
       [(and (list? datum) (not (null? datum)))
           (cond
             [(eqv? (1st datum) 'case)
-              (case-exp (parse-exp (2nd datum)) (map (lambda (x) (parse-exp (car x))) (cddr datum))
+              (case-exp (parse-exp (2nd datum)) (map (lambda (x) (lit-exp (car x))) (cddr datum))
                                                 (map (lambda (x) (parse-exp (cadr x))) (cddr datum)))]
             [(eqv? (1st datum) 'cond)
               (cond-exp (map (lambda (x) (parse-exp (car x))) (cdr datum))

@@ -54,14 +54,14 @@
 (define syntax-expand
   (trace-lambda synt-expand (exp)
     (cases expression exp
+      [if-exp (test-exp then-exp else-exp)
+        (if-exp (syntax-expand test-exp) (syntax-expand then-exp) (syntax-expand else-exp))]
+      [if-one-exp (test-exp then-exp)
+        (if-one-exp (syntax-expand test-exp) (syntax-expand then-exp))]
       [let-exp (vars exps bodies)
         (let-exp vars (map syntax-expand exps) (map syntax-expand bodies))]
       [begin-exp (bodies)
-        (app-exp (lambda-exp '() (map-exp syntax-expand bodies)) '())
-          ; (if (not (null? bodies))
-          ;   (syntax-expand (car bodies)) 
-          ;   )
-        ]
+        (app-exp (lambda-exp '() (map syntax-expand bodies)) '())]
       [and-exp (bodies)
         (if (not (null? bodies))
           (if-exp (car bodies) (syntax-expand (and-exp (cdr bodies))) (lit-exp #f))
@@ -81,22 +81,16 @@
         (while-exp (syntax-expand test) (map syntax-expand bodies))]
       [cond-exp (tests bodies)
         (cond
-          [(null? tests) (lit-exp void)]
-          [(eqv? 'else (cadar tests)) (car bodies)]
-          [(not (null? tests)) (if-exp (car tests) (car bodies) (syntax-expand (cond-exp (cdr tests) (cdr bodies))))])]
+          [(null? tests) (lit-exp (void))]
+          [(eqv? 'else (cadar tests)) (syntax-expand (car bodies))]
+          [(not (null? tests)) (if-exp (syntax-expand (car tests)) (syntax-expand (car bodies)) (syntax-expand (cond-exp (cdr tests) (cdr bodies))))])]
       [case-exp (key tests bodies)
         (cond
           [(null? (cdr tests)) (syntax-expand (car bodies))]
           [(eqv? 'else (cadar tests)) (car bodies)]
           [else (if-exp (app-exp (var-exp 'member) (list key (car tests)))
                         (car bodies)
-                        (case-exp key (cdr tests) (cdr bodies)))]
-
-          )
-
-
-
-      ]
+                        (syntax-expand (case-exp key (cdr tests) (cdr bodies))))])]
       [else exp])))
 
 ; evaluate the list of operands, putting results into a list
