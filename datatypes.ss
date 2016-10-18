@@ -13,7 +13,7 @@
     (id symbol?)
     (body (list-of expression?))]
   [pair-arg-lambda-exp
-    (id (list-of symbol?))
+    (id pair?)
     (body (list-of expression?))]
   [if-exp
     (test-exp expression?)
@@ -64,11 +64,15 @@
     (vars (list-of symbol?))
     (bodies (list-of expression?))
     (env environment?)]
+  [inf-closure
+    (var symbol?)
+    (bodies (list-of expression?))
+    (env environment?)]
+  [pair-closure
+    (vars pair?)
+    (bodies (list-of expression?))
+    (env environment?)]
   )
-	 
-; (define-datatype bool-val bool-val?
-;   [true-exp #t])
-	 
 	
 ;; environment type definitions
 

@@ -1,26 +1,21 @@
 ; top-level-eval evaluates a form in the global environment
 
 (define top-level-eval
-  (trace-lambda top-lam (form)
+  (lambda (form)
     ; later we may add things that are not expressions.
     (eval-exp form (empty-env))))
 
 ; eval-exp is the main component of the interpreter
 (define eval-exp
-  (trace-lambda eval-exping (exp env)
+  (lambda (exp env)
     (cases expression exp
       [lit-exp (datum) datum]
-      ; [var-exp (id)
-      ;   (apply-env env id ; look up its value.
-      ;      (lambda (x) x) ; procedure to call if id is in the environment
-      ;      (lambda () (eopl:error 'apply-env "variable not found in environment: ~s" id)))]
       [var-exp (id) 
         (apply-env env id
           (lambda (x) x)
           (lambda () 
             (apply-env init-env id (lambda (x) x) 
               (lambda () (error 'apply-env "variable ~s is not bound" id)))))]
-      ; [proc-exp (rator) rator]
       [let-exp (vars exps bodies)
         (let ([new-env (extend-env vars (eval-rands exps env) env)])
           (eval-bodies bodies new-env))]
@@ -31,8 +26,6 @@
       [if-one-exp (test-exp then-exp)
         (if (eval-exp test-exp env)
             (eval-exp then-exp env))]
-      ; [prim-proc-exp (rator rands)
-      ;   (apply-prim-proc rator (map (lambda (x) (eval-exp x env)) rands))]
       [set!-exp (vars exps)
         (list '())]
       [named-let-exp (name vars exps bodies)
@@ -48,9 +41,9 @@
       [lambda-exp (vars bodies)
         (closure vars bodies env)]
       [inf-arg-lambda-exp (var body)
-        (closure (list var) body env)]
+        (inf-closure var body env)]
       [pair-arg-lambda-exp (vars body)
-        (closure vars body env)]
+        (pair-closure vars body env)]
       )))
 
 ; evaluate the list of operands, putting results into a list
@@ -71,6 +64,18 @@
 			; You will add other cases
       [closure (vars bodies env)
         (eval-bodies bodies (extend-env vars args env))]
+      [inf-closure (var bodies env)
+        (eval-bodies bodies (extend-env (list var) (list args) env))]
+      [pair-closure (vars bodies env)
+        (let loop ([old-vars vars] [new-vars '()] [old-args args] [new-args '()])
+          (if (not (pair? old-vars))
+            (eval-bodies bodies (extend-env (reverse (cons old-vars new-vars)) (reverse (cons old-args new-args)) env))
+            (loop (cdr old-vars) (cons (car old-vars) new-vars) (cdr old-args) (cons (car old-args) new-args))
+
+
+            ))
+
+        ]
       [else (error 'apply-proc
                    "Attempt to apply bad procedure: ~s" 
                     proc-value)])))
@@ -170,7 +175,7 @@
       (rep))))  ; tail-recursive, so stack doesn't grow.
 
 (define eval-one-exp
-  (trace-lambda evaling (x)
+  (lambda(x)
     (top-level-eval (parse-exp x))
   ))
 
