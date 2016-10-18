@@ -10,7 +10,7 @@
   (lambda (exp env)
     (cases expression exp
       [lit-exp (datum) datum]
-      [var-exp (id) 
+      [var-exp (id)
         (apply-env env id
           (lambda (x) x)
           (lambda () 
@@ -44,7 +44,41 @@
         (inf-closure var body env)]
       [pair-arg-lambda-exp (vars body)
         (pair-closure vars body env)]
+      [else (error 'eval-exp "bad expression case ~s" exp)]
       )))
+
+(define syntax-expand
+  (lambda (exp)
+    (cases expression exp
+      [begin-exp (bodies)
+        (app-exp (lambda-exp '() bodies) '())]
+      [and-exp (bodies)
+        (if (not (null? bodies))
+          (if-exp (car bodies) (syntax-expand (and-exp (cdr bodies))) (lit-exp #f))
+          (lit-exp #t))]
+      [or-exp (bodies)
+        (if (not (null? bodies))
+          (if-exp (car bodies) (lit-exp #t) (syntax-expand (or-exp (cdr bodies))))
+          (lit-exp #f))]
+      ; [let*-exp (vars exps bodies)
+      ;   ; (if (not (null? vars))
+      ;   ;   (let-exp (list (car vars)) (list (car exps)) (syntax-expand (let*-exp (cdr vars) (cdr exps) bodies)))
+      ;   ;   bodies
+      ;   ;   )
+      ;   (cond
+      ;     [(and (not (null? vars)) (not (null? (cdr vars)))) (list (let-exp (list (car vars)) (list (car exps)) (syntax-expand (let*-exp (cdr vars) (cdr exps) bodies))))]
+      ;     [(and (not (null? vars)) (null? (cdr vars))) (let-exp (list (car vars)) (list (car exps)) bodies)]
+      ;     [else bodies]
+
+      ;     )
+
+
+
+      ;   ]
+
+
+
+      [else exp])))
 
 ; evaluate the list of operands, putting results into a list
 
@@ -54,14 +88,13 @@
         (eval-exp e env)) rands)))
 
 ;  Apply a procedure to its arguments.
-;  At this point, we only have primitive procedures.  
+;  At this point, we only have primitive procedures.
 ;  User-defined procedures will be added later.
 
 (define apply-proc
   (lambda (proc-value args)
     (cases proc-val proc-value
       [prim-proc (op) (apply-prim-proc op args)]
-			; You will add other cases
       [closure (vars bodies env)
         (eval-bodies bodies (extend-env vars args env))]
       [inf-closure (var bodies env)
@@ -70,19 +103,14 @@
         (let loop ([old-vars vars] [new-vars '()] [old-args args] [new-args '()])
           (if (not (pair? old-vars))
             (eval-bodies bodies (extend-env (reverse (cons old-vars new-vars)) (reverse (cons old-args new-args)) env))
-            (loop (cdr old-vars) (cons (car old-vars) new-vars) (cdr old-args) (cons (car old-args) new-args))
-
-
-            ))
-
-        ]
+            (loop (cdr old-vars) (cons (car old-vars) new-vars) (cdr old-args) (cons (car old-args) new-args))))]
       [else (error 'apply-proc
                    "Attempt to apply bad procedure: ~s" 
                     proc-value)])))
 
 (define *prim-proc-names* '(+ - * / zero? add1 sub1 not cons car cdr null? < <= > >= = list append assq assv assoc equal? eq? eqv? atom? length list->vector
                               list->string list->fxvector vector make-vector vector-ref list-ref vector? number? symbol? set-car! set-cdr! vector-set! display
-                              newline cadr caar cdar cddr caaar caadr cadar cdaar cddar cdadr caddr cdddr list? procedure? pair? vector->list void map apply begin))
+                              newline cadr caar cdar cddr caaar caadr cadar cdaar cddar cdadr caddr cdddr list? procedure? pair? vector->list void map apply begin quotient))
 (define bool-vals '(#t #f))
 
 (define init-env         ; for now, our initial global environment only contains 
@@ -159,11 +187,10 @@
       [(void) (void)]
       [(map) (map (car args) (cadr args))]
       [(apply) (apply (car args) (cadr args))]
-      ; [(begin) (apply begin args)]
-      ;[(quote) (car args)]
+      [(quotient) (quotient (car args) (cadr args))]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
-            prim-op)])))
+            prim-proc)])))
 
 (define rep      ; "read-eval-print" loop.
   (lambda ()
@@ -176,7 +203,7 @@
 
 (define eval-one-exp
   (lambda(x)
-    (top-level-eval (parse-exp x))
+    (top-level-eval (syntax-expand (parse-exp x)))
   ))
 
 (define eval-bodies

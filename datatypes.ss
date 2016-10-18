@@ -44,6 +44,12 @@
   [let*-exp
     (vars list?)
     (exps (list-of expression?))
+    (bodies (list-of expression?))]
+  [begin-exp
+    (bodies (list-of expression?))]
+  [and-exp
+    (bodies (list-of expression?))]
+  [or-exp
     (bodies (list-of expression?))])
 
 (define-datatype environment environment?

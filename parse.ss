@@ -15,6 +15,12 @@
 
       [(and (list? datum) (not (null? datum)))
           (cond
+            [(eqv? (1st datum) 'and)
+              (and-exp (map parse-exp (cdr datum)))]
+            [(eqv? (1st datum) 'or)
+              (or-exp (map parse-exp (cdr datum)))]
+            [(eqv? (1st datum) 'begin)
+              (begin-exp (map parse-exp (cdr datum)))]
             [(eqv? (1st datum) 'lambda)  ; test for the lambda cases
               (cond
                 [(null? (cdr datum))
