@@ -67,7 +67,14 @@
   (extended-env-record
    (syms (list-of symbol?))
    (vals (list-of scheme-value?))
-   (env environment?)))
+   (env environment?))
+
+  [recursively-extended-env-record
+    (proc-names (list-of symbol?))
+    (idss (list-of (list-of symbol?)))
+    (bodiess (list-of (list-of expression?)))
+    (env environment?)]
+  )
 
 
 ; datatype for procedures.  At first there is only one

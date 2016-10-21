@@ -12,7 +12,7 @@
     (cond
       [(symbol? datum)
         (var-exp datum)]
-
+      
       [(and (list? datum) (not (null? datum)))
           (cond
             [(eqv? (1st datum) 'case)

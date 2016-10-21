@@ -30,8 +30,9 @@
         (list '())]
       [named-let-exp (name vars exps bodies)
         (list '())]
-      [letrec-exp (vars exps bodies)
-        (list '())]
+      [letrec-exp (proc-names idss bodiess letrec-body)
+        (eval-bodies letrec-bodies
+          (extend-env-recursively proc-names idss bodiess env))]
       [let*-exp (vars exps bodies)
         (let ([new-env (extend-env vars (eval-rands exps env) env)])
           (eval-bodies bodies new-env))]
@@ -84,6 +85,12 @@
           [(null? tests) (lit-exp (void))]
           [(eqv? 'else (cadar tests)) (syntax-expand (car bodies))]
           [(not (null? tests)) (if-exp (syntax-expand (car tests)) (syntax-expand (car bodies)) (syntax-expand (cond-exp (cdr tests) (cdr bodies))))])]
+      [letrec-exp
+          (proc-names (list-of symbol?))
+          (idss (list-of (list-of symbol?)))
+          (bodiess (list-of (list-of expression?)))
+          (letrec-bodies (list-of expression?))]
+
       [case-exp (key tests bodies)
         (cond
           [(null? (cdr tests)) (syntax-expand (car bodies))]
