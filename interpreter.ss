@@ -7,7 +7,7 @@
 
 ; eval-exp is the main component of the interpreter
 (define eval-exp
-  (trace-lambda eval? (exp env)
+  (lambda (exp env)
     (cases expression exp
       [lit-exp (datum) datum]
       [var-exp (id)
@@ -28,11 +28,11 @@
             (eval-exp then-exp env))]
       [set!-exp (vars exps)
         (list '())]
-      [named-let-exp (name vars exps bodies)
-        (list '())]
-      [letrec-exp (proc-names idss bodiess letrec-body)
+      [letrec-exp (proc-names idss bodiess letrec-bodies)
+
+        (begin
         (eval-bodies letrec-bodies
-          (extend-env-recursively proc-names idss bodiess env))]
+          (extend-env-recursively proc-names idss bodiess env)))]
       [let*-exp (vars exps bodies)
         (let ([new-env (extend-env vars (eval-rands exps env) env)])
           (eval-bodies bodies new-env))]
@@ -53,7 +53,7 @@
       )))
 
 (define syntax-expand
-  (trace-lambda synt-expand (exp)
+  (lambda (exp)
     (cases expression exp
       [if-exp (test-exp then-exp else-exp)
         (if-exp (syntax-expand test-exp) (syntax-expand then-exp) (syntax-expand else-exp))]
@@ -61,6 +61,11 @@
         (if-one-exp (syntax-expand test-exp) (syntax-expand then-exp))]
       [let-exp (vars exps bodies)
         (let-exp vars (map syntax-expand exps) (map syntax-expand bodies))]
+      [named-let-exp (name vars exps bodies)
+      (begin 
+        (letrec-exp (list name) (list vars) (list bodies) (list (app-exp (var-exp name) exps))))]
+
+
       [begin-exp (bodies)
         (app-exp (lambda-exp '() (map syntax-expand bodies)) '())]
       [and-exp (bodies)
@@ -78,6 +83,8 @@
           [(and (not (null? vars)) (null? (cdr vars)))
             (let-exp vars exps bodies)]
           [else bodies])]
+      [letrec-exp (proc-names idss bodiess letrec-bodies)
+        (letrec-exp proc-names idss (map (lambda (x) (map syntax-expand x)) bodiess) (map syntax-expand letrec-bodies))]
       [while-exp (test bodies)
         (while-exp (syntax-expand test) (map syntax-expand bodies))]
       [cond-exp (tests bodies)
@@ -85,11 +92,6 @@
           [(null? tests) (lit-exp (void))]
           [(eqv? 'else (cadar tests)) (syntax-expand (car bodies))]
           [(not (null? tests)) (if-exp (syntax-expand (car tests)) (syntax-expand (car bodies)) (syntax-expand (cond-exp (cdr tests) (cdr bodies))))])]
-      [letrec-exp
-          (proc-names (list-of symbol?))
-          (idss (list-of (list-of symbol?)))
-          (bodiess (list-of (list-of expression?)))
-          (letrec-bodies (list-of expression?))]
 
       [case-exp (key tests bodies)
         (cond
@@ -130,7 +132,8 @@
 
 (define *prim-proc-names* '(+ - * / zero? add1 sub1 not cons car cdr null? < <= > >= = list append assq assv assoc equal? eq? eqv? atom? length list->vector
                               list->string list->fxvector vector make-vector vector-ref list-ref vector? number? symbol? set-car! set-cdr! vector-set! display
-                              newline cadr caar cdar cddr caaar caadr cadar cdaar cddar cdadr caddr cdddr list? procedure? pair? vector->list void map apply begin quotient member))
+                              newline cadr caar cdar cddr caaar caadr cadar cdaar cddar cdadr caddr cdddr list? procedure? pair? vector->list void map apply begin quotient member
+                              list-tail))
 (define bool-vals '(#t #f))
 
 (define init-env         ; for now, our initial global environment only contains 
@@ -209,6 +212,7 @@
       [(apply) (apply-proc (car args) (cadr args))]
       [(quotient) (quotient (car args) (cadr args))]
       [(member) (member (car args) (cadr args))]
+      [(list-tail) (list-tail (car args) (cadr args))]
       [else (error 'apply-prim-proc 
             "Bad primitive procedure name: ~s" 
             prim-proc)])))
@@ -229,7 +233,7 @@
       (rep))))  ; tail-recursive, so stack doesn't grow.
 
 (define eval-one-exp
-  (lambda(x)
+  (lambda (x)
     (top-level-eval (syntax-expand (parse-exp x)))
   ))
 

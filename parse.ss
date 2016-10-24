@@ -12,7 +12,7 @@
     (cond
       [(symbol? datum)
         (var-exp datum)]
-      
+
       [(and (list? datum) (not (null? datum)))
           (cond
             [(eqv? (1st datum) 'case)
@@ -108,8 +108,11 @@
                               (3rd datum)))
                           (eopl:error 'parse-exp "Invalid let syntax: decls first members must be symbols: ~s" datum)]
                       [else 
-                        (named-let-exp (map car (3rd datum)) (map (lambda (x)
-                                                              (parse-exp (2nd x))) (3rd datum)) (map parse-exp (cdddr datum)))])
+                      (begin 
+                        (named-let-exp  (2nd datum)
+                                        (map car (3rd datum)) 
+                                        (map (lambda (x) (parse-exp (2nd x))) (3rd datum)) 
+                                        (map parse-exp (cdddr datum))))])
 
                     (cond ; unnamed let 
                       [(< (length datum) 3)
@@ -148,8 +151,12 @@
                           (eopl:error 'parse-exp "Invalid let syntax: decls first members must be symbols: ~s" datum)]
 
                       [else 
-                        (letrec-exp (map car (2nd datum)) (map (lambda (x)
-                                                              (parse-exp (2nd x))) (2nd datum)) (map parse-exp (cddr datum)))])]
+                      (begin 
+                        (letrec-exp (map car (2nd datum)) ; names
+                                    (map (lambda (x) (cadr (2nd x))) (2nd datum)) ; vars
+                                    (map (lambda (x) (map parse-exp (cddr (cadr x)))) (2nd datum)) ; bodies
+                                    (map parse-exp (cddr datum)) ))]  ; letrec body
+              )] 
             [(eqv? (1st datum) 'quote)
               (lit-exp (cadr datum))]
 
@@ -164,4 +171,3 @@
           (eopl:error 'parse-exp "Error in parse-exp: Not a proper list: ~s" datum)]
       [else
         (eopl:error 'parse-exp "Invalid concrete syntax ~s" datum)])))
-

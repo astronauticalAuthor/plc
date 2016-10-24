@@ -35,9 +35,10 @@
     (exps (list-of expression?))
     (bodies (list-of expression?))]
   [letrec-exp
-    (vars list?)
-    (exps (list-of expression?))
-    (bodies (list-of expression?))]
+    (proc-names (list-of symbol?))
+    (idss  (list-of (list-of (or symbol? pair?))) )
+    (bodiess (list-of (list-of expression?)))
+    (letrec-bodies (list-of expression?))]
   [app-exp
     (rator expression?)
     (rand (list-of expression?))]
