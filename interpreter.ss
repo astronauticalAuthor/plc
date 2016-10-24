@@ -59,13 +59,16 @@
         (if-exp (syntax-expand test-exp) (syntax-expand then-exp) (syntax-expand else-exp))]
       [if-one-exp (test-exp then-exp)
         (if-one-exp (syntax-expand test-exp) (syntax-expand then-exp))]
+      [lambda-exp (id body)
+        (lambda-exp id (syntax-expand body))]
+      [inf-arg-lambda-exp (id body)
+        (inf-arg-lambda-exp id (syntax-expand body))]
+      [pair-arg-lambda-exp (id body)
+        (pair-arg-lambda-exp id (syntax-expand body))]
       [let-exp (vars exps bodies)
         (let-exp vars (map syntax-expand exps) (map syntax-expand bodies))]
       [named-let-exp (name vars exps bodies)
-      (begin 
-        (letrec-exp (list name) (list vars) (list bodies) (list (app-exp (var-exp name) exps))))]
-
-
+        (letrec-exp (list name) (list vars) (list (map syntax-expand bodies)) (list (app-exp (var-exp name) (map syntax-expand exps))))]
       [begin-exp (bodies)
         (app-exp (lambda-exp '() (map syntax-expand bodies)) '())]
       [and-exp (bodies)

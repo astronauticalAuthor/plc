@@ -107,12 +107,11 @@
                                         (symbol? (1st x)))
                               (3rd datum)))
                           (eopl:error 'parse-exp "Invalid let syntax: decls first members must be symbols: ~s" datum)]
-                      [else 
-                      (begin 
+                      [else
                         (named-let-exp  (2nd datum)
                                         (map car (3rd datum)) 
                                         (map (lambda (x) (parse-exp (2nd x))) (3rd datum)) 
-                                        (map parse-exp (cdddr datum))))])
+                                        (map parse-exp (cdddr datum)))])
 
                     (cond ; unnamed let 
                       [(< (length datum) 3)
@@ -132,7 +131,6 @@
                       [else
                         (let-exp (map car (2nd datum)) (map (lambda (x)
                                                               (parse-exp (2nd x))) (2nd datum)) (map parse-exp (cddr datum)))]))]
-
             [(eqv? (1st datum) 'letrec)
               (cond ; letrec
                       [(> 3 (length datum))
@@ -150,20 +148,16 @@
                               (2nd datum)))
                           (eopl:error 'parse-exp "Invalid let syntax: decls first members must be symbols: ~s" datum)]
 
-                      [else 
-                      (begin 
+                      [else
                         (letrec-exp (map car (2nd datum)) ; names
                                     (map (lambda (x) (cadr (2nd x))) (2nd datum)) ; vars
                                     (map (lambda (x) (map parse-exp (cddr (cadr x)))) (2nd datum)) ; bodies
-                                    (map parse-exp (cddr datum)) ))]  ; letrec body
+                                    (map parse-exp (cddr datum)))]  ; letrec body
               )] 
             [(eqv? (1st datum) 'quote)
               (lit-exp (cadr datum))]
-
             [else
-               (app-exp (parse-exp (1st datum)) (map parse-exp (cdr datum)))])]
-            
-      
+               (app-exp (parse-exp (1st datum)) (map parse-exp (cdr datum)))])]     
 
       [(or (number? datum) (string? datum) (boolean? datum) (vector? datum) (null? datum) (list? datum))
         (lit-exp datum)]

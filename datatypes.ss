@@ -36,7 +36,7 @@
     (bodies (list-of expression?))]
   [letrec-exp
     (proc-names (list-of symbol?))
-    (idss  (list-of (list-of (or symbol? pair?))) )
+    (idss list?)
     (bodiess (list-of (list-of expression?)))
     (letrec-bodies (list-of expression?))]
   [app-exp
@@ -72,7 +72,7 @@
 
   [recursively-extended-env-record
     (proc-names (list-of symbol?))
-    (idss (list-of (list-of symbol?)))
+    (idss list?)
     (bodiess (list-of (list-of expression?)))
     (env environment?)]
   )

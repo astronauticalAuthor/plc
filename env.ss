@@ -38,11 +38,14 @@
         	      (succeed (list-ref vals pos))
         	      (apply-env env sym succeed fail)))]
 
-      [recursively-extended-env-record
-          (procnames idss bodiess old-env)
-              (let ([pos (list-find-position sym procnames)])
-                  (if (number? pos)
-                      (closure (list-ref idss pos) (list-ref bodiess pos) env)
-                      (apply-env old-env sym succeed fail)))]
+      [recursively-extended-env-record (procnames idss bodiess old-env)
+        (let ([pos (list-find-position sym procnames)])
+            (if (number? pos)
+                (let ([id (list-ref idss pos)])
+                  (cond
+                    [(symbol? id) (inf-closure id (list-ref bodiess pos) env)]
+                    [(list? id) (closure id (list-ref bodiess pos) env)]
+                    [(pair? id) (pair-closure id (list-ref bodiess pos) env)]))
+                (apply-env old-env sym succeed fail)))]
       )))
 
