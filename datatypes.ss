@@ -77,13 +77,13 @@
   (extended-env-record
    (syms (list-of symbol?))
    (vals (list-of scheme-value?))  
-   (env cell?))  ; was environment
+   (env environment?))  ; was environment
 
   [recursively-extended-env-record
     (proc-names (list-of symbol?))
     (idss list?)
     (bodiess (list-of (list-of expression?)))
-    (env cell?)] ; was environment
+    (env environment?)] ; was environment
   )
 
 
@@ -96,15 +96,15 @@
   [closure
     (vars (list-of symbol?))
     (bodies (list-of expression?))
-    (env cell?)] ; was environment
+    (env environment?)] ; was environment
   [inf-closure
     (var symbol?)
     (bodies (list-of expression?))
-    (env cell?)] ; was environment
+    (env environment?)] ; was environment
   [pair-closure
     (vars pair?)
     (bodies (list-of expression?))
-    (env cell?)] ; was environment
+    (env environment?)] ; was environment
   )
 
 ;; environment type definitions

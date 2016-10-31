@@ -44,12 +44,7 @@
                 [(not (or (symbol? (2nd datum)) (pair? (2nd datum)) (null? (2nd datum))))
                   (eopl:error 'parse-exp "Invalid lambda syntax: Invalid parameter list:~s" datum)]
                 [else
-                  (begin 
-                    ; (display (cddr datum))
-                  (lambda-exp (2nd datum) (map parse-exp (cddr datum))))])]
-
-
-
+                  (lambda-exp (2nd datum) (map parse-exp (cddr datum)))])]              
             [(eqv? (1st datum) 'case-lambda)
               (case-lambda-exp (map car (cdr datum)) (map cdr (cdr datum)))]  ;**  send first the arguments, then the bodies of each case-lambda
 
