@@ -1,11 +1,17 @@
 
 ;; Parsed expression datatypes
 
+
+(define id-literal
+  (lambda (arg)
+    (or (number? arg) (char? arg) (string? arg) (boolean? arg) (vector? arg) (list? arg) (symbol? arg) (pair? arg))))
+
+
 (define-datatype expression expression?
   [var-exp
     (id symbol?)]  ; this is from eval-exp.  should help turn the expression into the evaluated expression
   [lit-exp
-    (literal (lambda (x) #t))]
+    (id id-literal)]
   [lambda-exp
     (id (lambda (x) (or (symbol? x) (list-of var-exp))))
     (body (list-of expression?))]
@@ -61,20 +67,23 @@
   [case-exp
     (key expression?)
     (tests (list-of expression?))
-    (bodies (list-of expression?))])
+    (bodies (list-of expression?))]
+  [define-exp
+    (var symbol?)
+    (exp expression?)])
 
 (define-datatype environment environment?
   (empty-env-record)  ;Exception in closure:   Bad env field (environment? (empty-env-record)) => #f
   (extended-env-record
    (syms (list-of symbol?))
-   (vals (list-of scheme-value?))
-   (env environment?))
+   (vals (list-of scheme-value?))  
+   (env cell?))  ; was environment
 
   [recursively-extended-env-record
     (proc-names (list-of symbol?))
     (idss list?)
     (bodiess (list-of (list-of expression?)))
-    (env environment?)]
+    (env cell?)] ; was environment
   )
 
 
@@ -87,17 +96,17 @@
   [closure
     (vars (list-of symbol?))
     (bodies (list-of expression?))
-    (env environment?)]
+    (env cell?)] ; was environment
   [inf-closure
     (var symbol?)
     (bodies (list-of expression?))
-    (env environment?)]
+    (env cell?)] ; was environment
   [pair-closure
     (vars pair?)
     (bodies (list-of expression?))
-    (env environment?)]
+    (env cell?)] ; was environment
   )
-	
+
 ;; environment type definitions
 
 (define scheme-value?

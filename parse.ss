@@ -44,7 +44,14 @@
                 [(not (or (symbol? (2nd datum)) (pair? (2nd datum)) (null? (2nd datum))))
                   (eopl:error 'parse-exp "Invalid lambda syntax: Invalid parameter list:~s" datum)]
                 [else
-                  (lambda-exp (2nd datum) (map parse-exp (cddr datum)))])]
+                  (begin 
+                    ; (display (cddr datum))
+                  (lambda-exp (2nd datum) (map parse-exp (cddr datum))))])]
+
+
+
+            [(eqv? (1st datum) 'case-lambda)
+              (case-lambda-exp (map car (cdr datum)) (map cdr (cdr datum)))]  ;**  send first the arguments, then the bodies of each case-lambda
 
             [(eqv? (1st datum) 'if)  ; test for the if cases
               (cond
@@ -156,6 +163,9 @@
               )] 
             [(eqv? (1st datum) 'quote)
               (lit-exp (cadr datum))]
+
+            [(eqv? (1st datum) 'define)   ; define val exp
+              (define-exp (2nd datum) (parse-exp (3rd datum)))]
             [else
                (app-exp (parse-exp (1st datum)) (map parse-exp (cdr datum)))])]     
 
