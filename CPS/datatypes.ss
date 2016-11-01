@@ -1,6 +1,23 @@
 
 ;; Parsed expression datatypes
-
+(define-datatype continuation continuation?
+  [init-k]
+  [rator-k 
+    (rands (list-of expression?))
+    (env environment?)
+    (k continuation?)]
+  [if-exp-k
+    (then-exp expression?)
+    (else-exp expression?)
+    (env environment?)
+    (k continuation?)]
+  [if-one-exp-k
+    (then-exp expression?)
+    (env environment?)
+    (k continuation?)]
+  [rands-k 
+    (rator-val proc-val?)
+    (k continuation?)])
 
 (define id-literal
   (lambda (arg)
@@ -81,7 +98,8 @@
   (extended-env-record
    (syms (list-of symbol?))
    (vals (list-of scheme-value?))  
-   (env environment?))  ; was environment
+   (env environment?)  ; was environment
+   (k continuation?))
 
   [recursively-extended-env-record
     (proc-names (list-of symbol?))

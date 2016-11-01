@@ -28,7 +28,7 @@
         [else (loop (cdr datum) result (+ count 1))]))))  ; if a regular item
 
 (define parse-exp
-  (lambda (datum)
+  (trace-lambda parsing (datum)
     (cond
       [(symbol? datum)
         (var-exp datum)]
@@ -194,7 +194,9 @@
             [(eqv? (1st datum) 'define)   ; define val exp
               (define-exp (2nd datum) (parse-exp (3rd datum)))]
             [else
-               (app-exp (parse-exp (1st datum)) (map parse-exp (cdr datum)))])]     
+            (begin 
+               (app-exp (parse-exp (1st datum)) (map parse-exp (cdr datum))))]
+        )]    
 
       [(or (number? datum) (string? datum) (boolean? datum) (vector? datum) (null? datum) (list? datum))
         (lit-exp datum)]
