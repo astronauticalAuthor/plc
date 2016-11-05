@@ -28,7 +28,7 @@
         [else (loop (cdr datum) result (+ count 1))]))))  ; if a regular item
 
 (define parse-exp
-  (trace-lambda parsing (datum)
+  (lambda (datum)
     (cond
       [(symbol? datum)
         (var-exp datum)]

@@ -12,26 +12,28 @@
           (eval-exp else-exp env k))]
       [if-one-exp-k (then-exp env k)
         (if val
-          (eval-exp then-exp env k))]
+          (eval-exp then-exp env k)
+          )]
 
       ; [let-rands-k (vars bodies env k)
       ;   (eval-bodies bodies (extend-env vars val env) k)]
       [list-index-cps (pred-cps ls k)
         (if val
           (apply-k k 0)
-          (list-index pred-cps (cdr ls) (trace-lambda kontinuing? (kontinuation)
-                                              (if (number? val)
-                                                  (apply-k kontinuation (+ 1 val))
-                                                  (apply-k kontinuation #f)))))]
+          (list-index pred-cps (cdr ls) (list-index-kont k)))]
+      [list-index-kont (k)
+        (if (number? val)
+          (apply-k (+ 1 val))
+          (apply-k k #f))]
       [list-find-pos-k (vals sym env success fail)
         (if (number? val)
           (apply-k success (list-ref vals val))  ; if it is found
           (apply-env env sym k fail))]
       [list-find-rec-k (bodies sym env old-env k fail)
-          (if (number? v)
-            (if (not (expression? (list-ref bodies v)))
-              (apply-k k (list-ref bodies v))
-              (closure (list-ref bodies v) env k)
+          (if (number? val)
+            (if (not (expression? (list-ref bodies val)))
+              (apply-k k (list-ref bodies val))
+              (closure (list-ref bodies val) env k)
             )
             (apply-env old-env sym k fail))]
 
@@ -43,13 +45,14 @@
 (define top-level-eval
   (trace-lambda top-evaling? (form)
     ; later we may add things that are not expressions.
-    (eval-exp form global-env (init-k))))
+    (eval-exp form (init-env) (init-k))))
 
 ; eval-exp is the main component of the interpreter
 (define eval-exp
   (trace-lambda evaling? (exp cell k)
     ; (let ([env (deref cell)])
     (let ([env cell])
+      ; (begin (display env)
       (cases expression exp
         [lit-exp (datum) (apply-k k datum)]
         [var-exp (id)
@@ -60,17 +63,21 @@
                 (lambda () (error 'apply-env "variable ~s is not bound" id)))
           ; )
       ]
-        [let-exp (vars exps bodies)
-          (let ([new-env (extend-env vars (eval-rands exps env (rands-k bodies k)) env)])
-            (eval-bodies bodies new-env k))]
-        [if-exp (test-exp then-exp else-exp)
-          (if (eval-exp test-exp env k)
+        [let-exp (vars exps bodies)  ; need to make cps
+          ; (let ([new-env (extend-env vars (eval-rands exps env (rands-k bodies k)) env)])
+          ;   (eval-bodies bodies new-env k))
+            ; (extend-env vars (eval-rands exps))
+          ]
+        [if-exp (test-exp then-exp else-exp)  ; check if this is good for cps
+          (if (eval-exp test-exp env (lambda (x) x)) ; check if true
               (eval-exp then-exp env k)
               (eval-exp else-exp env k))]
-        [if-one-exp (test-exp then-exp)
-          (if (eval-exp test-exp env k)
-              (eval-exp then-exp env k))]
-        [set!-exp (var exp)
+        [if-one-exp (test-exp then-exp)  ; check if this is good for cps
+          ; (if (eval-exp test-exp env k)
+          ;     (eval-exp then-exp env k))
+              (eval-exp test-exp env (if-one-exp then-exp env k))
+          ]
+        [set!-exp (var exp)  ; need to make cps
           (mod-env-set! env var (eval-bodies (list exp) env k))]
         [letrec-exp (proc-names idss bodiess letrec-bodies)
           (eval-bodies letrec-bodies
@@ -81,24 +88,28 @@
         [app-exp (rator rands)
           ; (let ([proc-value (eval-exp rator env (rator-k rands env k))] [args (eval-rands rands env (rands-k rands k))])
           ;   (apply-proc proc-value args k))
-          (eval-exp rator env (rator-k rands env k))
+          (begin 
+            (display rator) (newline) (display rands)
+          (eval-exp rator env (rator-k rands env k)))
           ]
-        [lambda-exp (vars bodies)
+        [lambda-exp (vars bodies) ; think this is good
           (apply-k k 
             (closure vars bodies env))]
-        [inf-arg-lambda-exp (var body)
+        [inf-arg-lambda-exp (var body)  ; need to put in cps
           (inf-closure var body env)]
-        [pair-arg-lambda-exp (vars body)
+        [pair-arg-lambda-exp (vars body) ; need to put in cps
           (pair-closure vars body env)]
-        [ref-lambda-exp (ids refs bodies)
+        [ref-lambda-exp (ids refs bodies)  ; need to put in cps
           (ref-closure ids refs bodies env)]
-        [while-exp (test bodies)
+        [while-exp (test bodies)  ; need to put in cps
           (eval-exp (if-one-exp test
                       (app-exp (lambda-exp '() (append bodies (list (while-exp test bodies)))) '())
-                      ) env k)]
+                      ) env k)
+
+          ]
         [define-exp (var exp)
           (set! global-env (extend-env (list var) (list (eval-exp exp env k)) global-env))]
-        [else (error 'eval-exp "bad expression case ~s" exp)]
+        [else (eopl:error 'eval-exp "bad expression case ~s" exp)]
         ))))
 
 (define apply-proc

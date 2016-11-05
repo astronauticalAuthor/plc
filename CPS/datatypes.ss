@@ -46,6 +46,8 @@
     (pred-cps procedure?)
     (ls list?)
     (k cont-or-proc?)]
+  [list-index-kont
+    (k cont-or-proc)]
   [list-find-pos-k
     (vals list?)
     (sym symbol?)
