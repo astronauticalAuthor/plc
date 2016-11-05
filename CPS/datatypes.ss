@@ -47,7 +47,7 @@
     (ls list?)
     (k cont-or-proc?)]
   [list-index-kont
-    (k cont-or-proc)]
+    (k cont-or-proc?)]
   [list-find-pos-k
     (vals list?)
     (sym symbol?)
@@ -73,6 +73,10 @@
     (old-env environment?)
     (sym symbol?)
     (k cont-or-proc?)]
+  [app-exp-k
+   (rands (list-of expression?))
+   (env environment?)
+   (k continuation?)]
     )
 
 (define id-literal
