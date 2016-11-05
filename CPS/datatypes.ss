@@ -1,23 +1,65 @@
 
+(define-datatype environment environment?
+  (empty-env-record)  ;Exception in closure:   Bad env field (environment? (empty-env-record)) => #f
+  (extended-env-record
+   (syms (list-of symbol?))
+   (vals (list-of scheme-value?))  
+   (env environment?)  ; was environment
+   ; (k continuation?)
+   )
+
+  [recursively-extended-env-record
+    (proc-names (list-of symbol?))
+    (idss list?)
+    (bodiess (list-of (list-of expression?)))
+    (env environment?)] ; was environment
+  )
+
+(define cont-or-proc?
+  (lambda (cont-pred) 
+    (or (continuation? cont-pred) (procedure? cont-pred))
+  ))
+
 ;; Parsed expression datatypes
 (define-datatype continuation continuation?
   [init-k]
   [rator-k 
     (rands (list-of expression?))
     (env environment?)
-    (k continuation?)]
+    (k cont-or-proc?)]
   [if-exp-k
     (then-exp expression?)
     (else-exp expression?)
     (env environment?)
-    (k continuation?)]
+    (k cont-or-proc?)]
   [if-one-exp-k
     (then-exp expression?)
     (env environment?)
-    (k continuation?)]
+    (k cont-or-proc?)]
   [rands-k 
-    (rator-val proc-val?)
-    (k continuation?)])
+    (rator-val scheme-value?)
+    (k cont-or-proc?)]
+  ; [let-rands-k
+  ;   (env environment?)
+  ;   (k continuation?)]
+  [list-index-cps
+    (pred-cps procedure?)
+    (ls list?)
+    (k cont-or-proc?)]
+  [list-find-pos-k
+    (vals list?)
+    (sym symbol?)
+    (env environment?)
+    (k cont-or-proc?)
+    (fail procedure?)]
+  [list-find-rec-k 
+    (bodies list?)
+    (sym symbol?) 
+    (env environment?)
+    (old-env environment?)
+    (k cont-or-proc?)
+    (fail procedure?)]
+    )
 
 (define id-literal
   (lambda (arg)
@@ -93,20 +135,7 @@
     (var symbol?)
     (exp expression?)])
 
-(define-datatype environment environment?
-  (empty-env-record)  ;Exception in closure:   Bad env field (environment? (empty-env-record)) => #f
-  (extended-env-record
-   (syms (list-of symbol?))
-   (vals (list-of scheme-value?))  
-   (env environment?)  ; was environment
-   (k continuation?))
 
-  [recursively-extended-env-record
-    (proc-names (list-of symbol?))
-    (idss list?)
-    (bodiess (list-of (list-of expression?)))
-    (env environment?)] ; was environment
-  )
 
 
 ; datatype for procedures.  At first there is only one

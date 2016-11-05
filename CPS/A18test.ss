@@ -98,12 +98,12 @@
 		     )]
           [answers 
             (list 
-	     (eval-one-exp ' (+ 5 (call/cc (lambda (k) (+ 6 (k 7))))))
-	     (eval-one-exp ' (+ 3 (call/cc (lambda (k) (* 2 5)))))
-	     (eval-one-exp ' (+ 5 (call/cc (lambda (k) (or #f #f (+ 7 (k 4)) #f)))))
+	     (eval-one-exp '(+ 5 (call/cc (lambda (k) (+ 6 (k 7))))))
+	     (eval-one-exp '(+ 3 (call/cc (lambda (k) (* 2 5)))))
+	     (eval-one-exp '(+ 5 (call/cc (lambda (k) (or #f #f (+ 7 (k 4)) #f)))))
 	     (eval-one-exp '(list (call/cc procedure?)))
-	     (eval-one-exp ' (+ 2 (call/cc (lambda (k) (+ 3 (let* ([x 5] [y (k 7)]) (+ 10 (k 5))))))) )
-	     (eval-one-exp ' ((car (call/cc list)) (list cdr 1 2 3)) )
+	     (eval-one-exp '(+ 2 (call/cc (lambda (k) (+ 3 (let* ([x 5] [y (k 7)]) (+ 10 (k 5))))))) )
+	     (eval-one-exp '((car (call/cc list)) (list cdr 1 2 3)) )
 	     )])
       (display-results correct answers equal?)))
 
