@@ -6,6 +6,8 @@
         (eval-rands rands env (rands-k val k))]
       [rands-k (rator-val k)
         (apply-proc rator-val val k)]
+      [app-exp-k (rands env k)
+        (eval-rands rands env (rands-k val k))]
       [if-exp-k (then-exp else-exp env k)
         (if val
           (eval-exp then-exp env k)
@@ -100,9 +102,10 @@
         [app-exp (rator rands)
           ; (let ([proc-value (eval-exp rator env (rator-k rands env k))] [args (eval-rands rands env (rands-k rands k))])
           ;   (apply-proc proc-value args k))
-          (begin 
-            (display rator) (newline) (display rands)
-          (eval-exp rator env (rator-k rands env k)))
+          ; (begin 
+          ;   (display rator) (newline) (display rands))
+          (eval-exp rator env (app-exp-k rands env k))
+          ; )
           ]
         [lambda-exp (vars bodies) ; think this is good
           (apply-k k 
@@ -382,7 +385,7 @@
       (rep))))  ; tail-recursive, so stack doesn't grow.
 
 (define eval-one-exp
-  (lambda (x)
+  (trace-lambda eval-one-exp? (x)
     (let ([eval-result (top-level-eval (syntax-expand (parse-exp x)))])
             eval-result)
   ))
