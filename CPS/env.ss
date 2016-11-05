@@ -102,16 +102,17 @@
             ;         (mod-env-set! env val new-val)))
             ; first find the position
             ; set the new env to whatever vals is
-            (list-find-position val syms)
+            (list-find-position val syms (set-env-k vals new-val val k ))
             ]
           [recursively-extended-env-record (procnames idss bodiess old-env)
-              (let loop ([count 0])
-                  (if (>= count (length idss))
-                      (mod-env-set! old-env val new-val)
-                      (let ([pos (list-find-position val (list-ref idss count))])
-                          (if (number? pos)
-                              (list-set! vals pos new-val)
-                              (loop (+ count 1))))))]
+              ; (let loop ([count 0])
+              ;     (if (>= count (length idss))
+              ;         (mod-env-set! old-env val new-val)
+              ;         (let ([pos (list-find-position val (list-ref idss count))])
+              ;             (if (number? pos)
+              ;                 (list-set! vals pos new-val)
+              ;                 (loop (+ count 1))))))
+              (list-find-position sym ids (set-env-k bodies exp old-env sym k ))]
           [else (display 'mr-poopy-butt-hole)])))
 
 (define mod-global-env-set!
@@ -119,16 +120,18 @@
         (cases environment env
             [empty-env-record () (eopl:error 'apply-env "you are trying to set to an empty environment")]
             [extended-env-record (syms vals env)
-              (let ([pos (list-find-position val syms)])
-                  (if (number? pos)
-                    (list-set! vals pos new-val)
-                    (mod-global-env-set! val new-val env)))]
+              ; (let ([pos (list-find-position val syms)])
+              ;     (if (number? pos)
+              ;       (list-set! vals pos new-val)
+              ;       (mod-global-env-set! val new-val env)))
+              (list-find-position val syms (set-env-global-k vals new-val val k ))]
             [recursively-extended-env-record (procnames idss bodiess old-env)
-              (let loop ([count 0])
-                  (if (>= count (length idss))
-                      (mod-global-env-set! val new-val old-env)
-                      (let ([pos (list-find-position val (list-ref idss count))])
-                          (if (number? pos)
-                              (list-set! vals pos new-val)
-                              (loop (+ count 1))))))]
+              ; (let loop ([count 0])
+              ;     (if (>= count (length idss))
+              ;         (mod-global-env-set! val new-val old-env)
+              ;         (let ([pos (list-find-position val (list-ref idss count))])
+              ;             (if (number? pos)
+              ;                 (list-set! vals pos new-val)
+              ;                 (loop (+ count 1))))))
+              (list-find-position sym ids (set-env-global-k bodies exp old-env sym k ))]
             [else (display 'mr-poopy-butt-hole)])))

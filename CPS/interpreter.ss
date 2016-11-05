@@ -36,6 +36,18 @@
               (closure (list-ref bodies val) env k)
             )
             (apply-env old-env sym k fail))]
+      [set-env-k (vals exp new-val sym k )
+          (if (number? val)
+            (list-set! vals val exp k)
+            (mod-env-set! old-env sym exp k )
+          )
+        ]
+      [set-env-global-k (vals exp new-val sym k )
+          (if (number? val)
+            (list-set! vals val exp k)
+            (mod-global-env-set! old-env sym exp k )
+          )
+        ]
 
         )))
 
@@ -105,11 +117,10 @@
           (eval-exp (if-one-exp test
                       (app-exp (lambda-exp '() (append bodies (list (while-exp test bodies)))) '())
                       ) env k)
-
           ]
         [define-exp (var exp)
           (set! global-env (extend-env (list var) (list (eval-exp exp env k)) global-env))]
-        [else (eopl:error 'eval-exp "bad expression case ~s" exp)]
+        ; [else (eopl:error 'eval-exp "bad expression case ~s" exp)]
         ))))
 
 (define apply-proc

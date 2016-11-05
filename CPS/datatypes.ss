@@ -61,6 +61,18 @@
     (old-env environment?)
     (k cont-or-proc?)
     (fail procedure?)]
+  [set-env-k
+    (vals list?)
+    (exp scheme-value?)
+    (old-env environment?)
+    (sym symbol?)
+    (k cont-or-proc?)]
+  [set-env-global-k
+    (vals list?)
+    (exp scheme-value?)
+    (old-env environment?)
+    (sym symbol?)
+    (k cont-or-proc?)]
     )
 
 (define id-literal
