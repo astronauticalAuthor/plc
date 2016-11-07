@@ -1,20 +1,4 @@
-(define-datatype continuation continuation?
-  [init-k]
-  [rator-k 
-    (rands (list-of expression?))
-    (env environment?)
-    (k continuation?)]
-  [if-exp-k
-    (then-exp expression?)
-    (else-exp expression?)
-    (env environment?)
-    (k continuation?)]
-  [rands-k 
-    (rator-val scheme-value?)
-    (k continuation?)]
 
-
-    )
 
 
 ;; Parsed expression datatypes
@@ -132,6 +116,8 @@
     (refs (list-of number?))
     (bodies (list-of expression?))
     (env environment?)]
+  [continuation-proc 
+    (k continuation?)]
   )
 
 ;; environment type definitions
@@ -140,3 +126,63 @@
   (lambda (x) #t))
 
 
+(define-datatype continuation continuation?
+  [init-k]
+  [rator-k 
+    (rands (list-of expression?))
+    (env environment?)
+    (k continuation?)]
+  [rands-k 
+    (rator-val scheme-value?)
+    (k continuation?)]
+  [if-k
+    (then-exp expression?)
+    (else-exp expression?)
+    (env environment?)
+    (k continuation?)]
+  [no-else-if-k
+    (then-exp expression?)
+    (env environment?)
+    (k continuation?)]
+  [set!-exp-k 
+    (env environment?)
+    (id symbol?)
+    (k continuation?)]
+  [map-car-k
+    (cdr-ls (list-of scheme-value?))
+    (proc-cps scheme-value?)
+    (k continuation?)]
+  [map-cons-k 
+    (car-ls scheme-value?)
+    (k continuation?)]
+
+  [eval-while-rands-k1
+    (test-exp expression?)
+    (bodies (list-of expression?))
+    (env environment?)
+    (k continuation?)]
+  [eval-while-rands-k2 
+      (test-exp expression?)
+      (bodies (list-of expression?))
+      (env environment?)
+      (k continuation?)]
+  [define-k 
+      (id symbol?)
+      (env environment?)
+      (k continuation?)]
+  [eval-bodies-k
+      (exps (list-of expression?))
+      (env environment?)
+      (k continuation?)]
+  [eval-bodies-rands-k
+      (proc-val scheme-value?)
+      (k continuation?)]
+  ; [eval-begin-rator-k 
+  ;     (rands (list-of expression?))
+  ;     (env environment?)
+  ;     (k continuation?)]
+  ; [eval-begin-rands-k 
+  ;     (proc-value scheme-value?)
+  ;     (k continuation?)]
+
+    )

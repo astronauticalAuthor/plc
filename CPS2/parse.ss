@@ -61,15 +61,15 @@
                   (inf-arg-lambda-exp (2nd datum) (map parse-exp (cddr datum)))]
                 [(and (pair? (2nd datum)) (not (list? (2nd datum))))
                   (pair-arg-lambda-exp (2nd datum) (map parse-exp (cddr datum)))]
-                [(andmap (lambda (x) (or (symbol? x) (list? x))) (2nd datum))  ; the test for refs
-                  (begin 
-                    ; (display "grass tastes bad")
-                  (ref-lambda-exp (map (lambda (x) 
-                                          (if (list? x) (cadr x) x)) ; mapping each of the ids
-                                  (2nd datum)) 
-                          (get-ref-count (2nd datum)) (map parse-exp (cddr datum))))
-                  ; (lambda-exp (2nd datum) (map parse-exp (cddr datum)))
-                  ]
+                ; [(andmap (lambda (x) (or (symbol? x) (list? x))) (2nd datum))  ; the test for refs
+                ;   (begin 
+                ;     (display "grass tastes bad")
+                ;   (ref-lambda-exp (map (lambda (x) 
+                ;                           (if (list? x) (cadr x) x)) ; mapping each of the ids
+                ;                   (2nd datum)) 
+                ;           (get-ref-count (2nd datum)) (map parse-exp (cddr datum))))
+                ;   ; (lambda-exp (2nd datum) (map parse-exp (cddr datum)))
+                ;   ]
                 [(and (list? (2nd datum)) (not (andmap symbol? (2nd datum))))
                   (eopl:error 'parse-exp "Invalid lambda syntax: Invalid parameter syntax:~s" datum)]
                 
