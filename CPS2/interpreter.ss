@@ -23,7 +23,7 @@
           (apply-k k (cons car-ls val ))]
       [eval-while-rands-k1 (test-exp bodies env k)
             (if val
-                (eval-begin-rands bodies env (eval-while-rands-k2 test-exp bodies env k))
+                (eval-loop-rands bodies env (eval-while-rands-k2 test-exp bodies env k))
                 (apply-k k val))]
       [eval-while-rands-k2 (test-exp bodies env k)
                 (eval-while-rands test-exp bodies env k)]
@@ -88,7 +88,7 @@
         [letrec-exp (proc-names idss bodiess letrec-bodies)
           ; (eval-bodies letrec-bodies
           ;   (extend-env-recursively proc-names idss bodiess env) k)
-              (eval-begin-rands letrec-bodies (extend-env-recursively proc-names idss bodies env) k)
+              (eval-letrec-bodies letrec-bodies (extend-env-recursively proc-names idss bodies env) k)
           ]
         ; [let*-exp (vars exps bodies)
         ;   (let ([new-env (extend-env vars (eval-rands exps env k) env)])
@@ -102,10 +102,10 @@
           ; (eval-exp rator env (lambda (proc-value)
           ;                         (eval-rands rands env (lambda (args)
           ;                                                     (apply-proc-cps proc-value args k)))))
-              (eval-exp rator env (rator-k rands env k))
+              (eval-exp rator env (rator-k rands env k))  ;  there be something wrong with this too in later cases I think
           ]
         [lambda-exp (vars bodies)
-          (apply-k k (closure vars bodies env))]
+          (apply-k k (closure vars bodies env))]  ; need to check the closures
         [inf-arg-lambda-exp (var body)
           (apply-k k (inf-closure var body env))]
         [pair-arg-lambda-exp (vars body)
@@ -128,12 +128,12 @@
         [else (error 'eval-exp "bad expression case ~s" exp)]
         ))))
 
-(define eval-begin-rands
-  (lambda (rands env k)
-    (cond
-      [(null? rands) (apply-k k '())]
-      [(null? (cdr rands)) (eval-exp (car rands) env k)]
-      [else (eval-exp (car rands) env (eval-begin-rator-k rands env k))])))
+; (define eval-loop-rands
+;   (lambda (rands env k)
+;     (cond
+;       [(null? rands) (apply-k k '())]
+;       [(null? (cdr rands)) (eval-exp (car rands) env k)]
+;       [else (eval-exp (car rands) env (eval-begin-rator-k rands env k))])))
 
 (define eval-while-rands
   (lambda (test-exp bodies env k)
